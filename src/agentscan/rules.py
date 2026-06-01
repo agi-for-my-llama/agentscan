@@ -332,7 +332,11 @@ def _looks_like_mcp_config(path: Path, data: object) -> bool:
     name = path.name.lower()
     if name in {".mcp.json", "mcp.json", "claude_desktop_config.json"}:
         return True
-    return isinstance(data, dict) and ("mcpServers" in data or "servers" in data)
+    if not isinstance(data, dict):
+        return False
+    if "mcpServers" in data:
+        return True
+    return "mcp" in name and "servers" in data
 
 
 def _is_agent_instruction_path(path: Path) -> bool:

@@ -37,7 +37,11 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.format }}" = "sarif" ] || [ "${{ inputs.upload-sarif }}" = "true" ]; then
+          set +e
           agentscan "${{ inputs.path }}" --format sarif --fail-on "${{ inputs.fail-on }}" > agentscan.sarif
+          status=$?
+          echo "$status" > "$RUNNER_TEMP/agentscan-exit-code"
+          exit 0
         else
           agentscan "${{ inputs.path }}" --format "${{ inputs.format }}" --fail-on "${{ inputs.fail-on }}"
         fi
@@ -46,3 +50,7 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: agentscan.sarif
+    - name: Fail on findings
+      if: ${{ inputs.format == 'sarif' || inputs.upload-sarif == 'true' }}
+      shell: bash
+      run: exit "$(cat "$RUNNER_TEMP/agentscan-exit-code")"

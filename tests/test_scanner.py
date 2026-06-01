@@ -40,6 +40,25 @@ class ScannerTests(unittest.TestCase):
         self.assertIn("mcp.command.shell-pipeline", rule_ids)
         self.assertIn("mcp.env.inline-secret", rule_ids)
 
+    def test_does_not_treat_generic_servers_json_as_mcp_config(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "LICENSE").write_text("MIT", encoding="utf-8")
+            config = {
+                "servers": {
+                    "prod": {
+                        "env": {
+                            "API_TOKEN": "demo-token-value-that-is-not-an-mcp-config"
+                        }
+                    }
+                }
+            }
+            (root / "hosting.json").write_text(json.dumps(config), encoding="utf-8")
+
+            findings = scan(ScanOptions(root=root))
+
+        self.assertNotIn("mcp.env.inline-secret", {item.rule_id for item in findings})
+
     def test_detects_package_install_script(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
