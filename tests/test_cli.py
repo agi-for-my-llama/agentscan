@@ -53,6 +53,28 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(report["findings"], [])
 
+    def test_config_can_override_severity(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            (root / ".agentscan.json").write_text(
+                json.dumps(
+                    {
+                        "fail_on": "medium",
+                        "severity_overrides": {"oss.license-missing": "low"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--format", "json"])
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["findings"][0]["severity"], "low")
+
     def test_init_config_creates_starter_config(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -180,6 +202,11 @@ class CliTests(unittest.TestCase):
             report["runs"][0]["tool"]["driver"]["informationUri"],
             "https://github.com/agi-for-my-llama/agentscan",
         )
+        self.assertEqual(
+            report["runs"][0]["tool"]["driver"]["rules"][0]["helpUri"],
+            "https://github.com/agi-for-my-llama/agentscan/blob/main/docs/rules.md#osslicense-missing",
+        )
+        self.assertIn("security", report["runs"][0]["results"][0]["properties"]["tags"])
 
 
 if __name__ == "__main__":

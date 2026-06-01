@@ -114,6 +114,9 @@ AgentScan automatically reads `.agentscan.json` or `agentscan.json` from the rep
   "exclude": ["dist", "vendor"],
   "ignore_rules": ["oss.license-missing"],
   "ignore_paths": ["docs/generated"],
+  "severity_overrides": {
+    "github.workflow.write-all": "high"
+  },
   "baseline": "agentscan-baseline.json"
 }
 ```

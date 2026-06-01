@@ -1,0 +1,27 @@
+name: action-integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  sarif-mode:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run local AgentScan action
+        id: agentscan
+        continue-on-error: true
+        uses: ./
+        with:
+          path: examples/unsafe-repo
+          fail-on: high
+          upload-sarif: "true"
+      - name: Assert action failed after SARIF path
+        run: |
+          test "${{ steps.agentscan.outcome }}" = "failure"
+          test -f agentscan.sarif

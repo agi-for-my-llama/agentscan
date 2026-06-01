@@ -24,3 +24,7 @@ Use this when publishing AgentScan as a public GitHub repository.
 AgentScan scans repos for the new layer of risk introduced by AI coding agents and MCP servers: inline secrets, risky MCP commands, hostile agent instructions, dangerous install hooks, and overbroad GitHub workflow permissions.
 
 It runs locally, has no runtime dependencies, emits SARIF, supports baselines, and ships as a CLI, GitHub Action, and pre-commit hook.
+
+## Maintainer Notes
+
+- The `action-integration` workflow intentionally runs against `examples/unsafe-repo` and expects the local Action to fail after writing `agentscan.sarif`.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ class AgentScanConfig:
     ignore_rules: tuple[str, ...] = ()
     ignore_paths: tuple[str, ...] = ()
     baseline: str | None = None
+    severity_overrides: dict[str, str] = field(default_factory=dict)
     fail_on: str | None = None
     max_file_bytes: int | None = None
     raw_path: Path | None = None
@@ -50,11 +52,14 @@ def load_config(root: Path, explicit_path: str | None = None) -> AgentScanConfig
             warnings.append("Ignoring invalid max_file_bytes value.")
         max_file_bytes = None
 
+    severity_overrides = _severity_overrides(raw.get("severity_overrides"), warnings)
+
     return AgentScanConfig(
         exclude=tuple(_string_list(raw.get("exclude"))),
         ignore_rules=tuple(_string_list(raw.get("ignore_rules"))),
         ignore_paths=tuple(_normalize_path(item) for item in _string_list(raw.get("ignore_paths"))),
         baseline=_optional_str(raw.get("baseline")),
+        severity_overrides=severity_overrides,
         fail_on=fail_on,
         max_file_bytes=max_file_bytes,
         raw_path=path,
@@ -63,15 +68,13 @@ def load_config(root: Path, explicit_path: str | None = None) -> AgentScanConfig
 
 
 def filter_findings(findings: list[Finding], config: AgentScanConfig) -> list[Finding]:
-    if not config.ignore_rules and not config.ignore_paths:
-        return findings
-
-    return [
-        finding
+    filtered = [
+        _apply_severity_override(finding, config.severity_overrides)
         for finding in findings
         if not _ignored_by_rule(finding.rule_id, config.ignore_rules)
         and not _ignored_by_path(finding.path, config.ignore_paths)
     ]
+    return filtered
 
 
 def _resolve_config_path(root: Path, explicit_path: str | None) -> Path | None:
@@ -94,6 +97,41 @@ def _string_list(value: Any) -> list[str]:
 
 def _optional_str(value: Any) -> str | None:
     return value if isinstance(value, str) and value else None
+
+
+def _severity_overrides(value: Any, warnings: list[str]) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        warnings.append("Ignoring invalid severity_overrides value.")
+        return {}
+
+    overrides: dict[str, str] = {}
+    for rule_id, severity in value.items():
+        if not isinstance(rule_id, str) or not isinstance(severity, str):
+            warnings.append("Ignoring invalid severity override entry.")
+            continue
+        if severity not in SEVERITY_ORDER:
+            warnings.append(f"Ignoring invalid severity override for {rule_id}: {severity}")
+            continue
+        overrides[rule_id] = severity
+    return overrides
+
+
+def _apply_severity_override(finding: Finding, overrides: dict[str, str]) -> Finding:
+    severity = _matching_override(finding.rule_id, overrides)
+    if severity is None or severity == finding.severity:
+        return finding
+    return replace(finding, severity=severity)
+
+
+def _matching_override(rule_id: str, overrides: dict[str, str]) -> str | None:
+    for pattern, severity in overrides.items():
+        if pattern.endswith("*") and rule_id.startswith(pattern[:-1]):
+            return severity
+        if rule_id == pattern:
+            return severity
+    return None
 
 
 def _ignored_by_rule(rule_id: str, ignore_rules: tuple[str, ...]) -> bool:

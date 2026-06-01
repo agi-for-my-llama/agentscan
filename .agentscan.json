@@ -6,5 +6,6 @@
     "examples/unsafe-repo"
   ],
   "ignore_rules": [],
-  "ignore_paths": []
+  "ignore_paths": [],
+  "severity_overrides": {}
 }

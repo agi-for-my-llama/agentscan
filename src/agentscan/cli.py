@@ -143,6 +143,7 @@ def _init_config(root: Path) -> int:
                 "exclude": ["dist", "vendor"],
                 "ignore_rules": [],
                 "ignore_paths": [],
+                "severity_overrides": {},
             },
             indent=2,
         )
@@ -170,7 +171,12 @@ def _print_sarif(findings: list[Finding]) -> None:
             "name": item.rule_id,
             "shortDescription": {"text": item.message},
             "help": {"text": item.remediation},
+            "helpUri": _rule_help_uri(item.rule_id),
             "defaultConfiguration": {"level": _sarif_level(item.severity)},
+            "properties": {
+                "tags": _rule_tags(item.rule_id),
+                "precision": "high",
+            },
         }
 
     results = []
@@ -194,6 +200,7 @@ def _print_sarif(findings: list[Finding]) -> None:
                 "properties": {
                     "severity": item.severity,
                     "remediation": item.remediation,
+                    "tags": _rule_tags(item.rule_id),
                     **({"evidence": item.evidence} if item.evidence else {}),
                 },
             }
@@ -243,6 +250,38 @@ def _sarif_level(severity: str) -> str:
     if severity == "medium":
         return "warning"
     return "note"
+
+
+def _rule_help_uri(rule_id: str) -> str:
+    section = rule_id.split(".")[0]
+    if rule_id.startswith("mcp."):
+        section = "mcpcommand"
+    elif rule_id.startswith("agent.instructions."):
+        section = "agentinstructions"
+    elif rule_id.startswith("github.workflow."):
+        section = "githubworkflow"
+    elif rule_id.startswith("package.install-script"):
+        section = "packageinstall-script"
+    elif rule_id.startswith("oss.license-missing"):
+        section = "osslicense-missing"
+    return f"https://github.com/agi-for-my-llama/agentscan/blob/main/docs/rules.md#{section}"
+
+
+def _rule_tags(rule_id: str) -> list[str]:
+    tags = ["security"]
+    if rule_id.startswith("secret."):
+        tags.append("secrets")
+    if rule_id.startswith("mcp."):
+        tags.append("mcp")
+    if rule_id.startswith("agent.instructions."):
+        tags.append("agent-instructions")
+    if rule_id.startswith("github.workflow."):
+        tags.append("github-actions")
+    if rule_id.startswith("package."):
+        tags.append("supply-chain")
+    if rule_id.startswith("oss."):
+        tags.append("open-source")
+    return tags
 
 
 if __name__ == "__main__":
