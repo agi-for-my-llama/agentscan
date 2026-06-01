@@ -1,7 +1,9 @@
 {
+  "$schema": "./.agentscan.schema.json",
   "fail_on": "high",
   "exclude": [
-    ".venv"
+    ".venv",
+    "examples/unsafe-repo"
   ],
   "ignore_rules": [],
   "ignore_paths": []

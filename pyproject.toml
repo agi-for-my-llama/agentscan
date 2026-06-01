@@ -3,8 +3,8 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agentscan"
-version = "0.1.1"
+name = "agentscan-cli"
+version = "0.1.2"
 description = "Local-first scanner for AI agent configs, MCP servers, and common repo launch risks."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -25,8 +25,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agentscan/agentscan"
-Issues = "https://github.com/agentscan/agentscan/issues"
+Homepage = "https://github.com/agi-for-my-llama/agentscan"
+Issues = "https://github.com/agi-for-my-llama/agentscan/issues"
+Repository = "https://github.com/agi-for-my-llama/agentscan"
 
 [project.scripts]
 agentscan = "agentscan.cli:main"

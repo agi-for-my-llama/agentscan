@@ -16,6 +16,8 @@ Use this when publishing AgentScan as a public GitHub repository.
 - Include the CLI, GitHub Action, SARIF output, and config support in release notes.
 - Keep the release explicit that the scanner is conservative and local-first.
 - For patch releases, highlight baseline and pre-commit support because they reduce adoption friction.
+- PyPI distribution name is `agentscan-cli`; the `agentscan` name is already owned by another project.
+- Before running the publish workflow, configure PyPI trusted publishing for `agi-for-my-llama/agentscan`, workflow `publish.yml`, environment `pypi`.
 
 ## Launch Copy
 

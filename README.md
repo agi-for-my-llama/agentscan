@@ -14,6 +14,20 @@ It focuses on practical launch blockers:
 
 ## Install
 
+From PyPI, after publishing:
+
+```bash
+pipx install agentscan-cli
+```
+
+Until then, install from GitHub:
+
+```bash
+python -m pip install git+https://github.com/agi-for-my-llama/agentscan.git
+```
+
+From a local checkout:
+
 ```bash
 python -m pip install .
 ```
@@ -95,10 +109,12 @@ AgentScan automatically reads `.agentscan.json` or `agentscan.json` from the rep
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/agi-for-my-llama/agentscan/main/.agentscan.schema.json",
   "fail_on": "high",
   "exclude": ["dist", "vendor"],
   "ignore_rules": ["oss.license-missing"],
-  "ignore_paths": ["docs/generated"]
+  "ignore_paths": ["docs/generated"],
+  "baseline": "agentscan-baseline.json"
 }
 ```
 
@@ -140,6 +156,16 @@ AgentScan is intentionally conservative. It prefers specific, explainable checks
 | `oss.license-missing` | medium | missing repository license |
 
 See [docs/rules.md](docs/rules.md) for rule details and fixes.
+
+## Demo
+
+Try the intentionally unsafe fixture:
+
+```bash
+agentscan examples/unsafe-repo --fail-on critical
+```
+
+See [docs/demo.md](docs/demo.md).
 
 ## CI Example
 
@@ -205,6 +231,7 @@ python -m unittest discover -s tests
 
 - more MCP client config formats
 - package manager lockfile risk hints
+- PyPI trusted publishing setup
 - richer GitHub code scanning metadata
 
 ## License

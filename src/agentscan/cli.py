@@ -44,8 +44,10 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         findings = filter_findings(findings, config)
-        if args.baseline:
-            findings, baseline_warnings = apply_baseline(findings, Path(args.baseline))
+        baseline_path = args.baseline or config.baseline
+        if baseline_path:
+            baseline_file = _resolve_scan_path(root, baseline_path)
+            findings, baseline_warnings = apply_baseline(findings, baseline_file)
             for warning in baseline_warnings:
                 print(f"agentscan: baseline warning: {warning}", file=sys.stderr)
     except OSError as exc:
@@ -134,6 +136,7 @@ def _init_config(root: Path) -> int:
         json.dumps(
             {
                 "fail_on": "high",
+                "$schema": "./.agentscan.schema.json",
                 "exclude": ["dist", "vendor"],
                 "ignore_rules": [],
                 "ignore_paths": [],
@@ -145,6 +148,11 @@ def _init_config(root: Path) -> int:
     )
     print(f"Created {path}")
     return 0
+
+
+def _resolve_scan_path(root: Path, path: str) -> Path:
+    candidate = Path(path)
+    return candidate if candidate.is_absolute() else root / candidate
 
 
 def _print_json(findings: list[Finding]) -> None:

@@ -1,0 +1,10 @@
+on:
+  pull_request_target:
+
+permissions: write-all
+
+jobs:
+  unsafe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo unsafe

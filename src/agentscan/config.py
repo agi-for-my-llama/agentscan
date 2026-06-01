@@ -16,6 +16,7 @@ class AgentScanConfig:
     exclude: tuple[str, ...] = ()
     ignore_rules: tuple[str, ...] = ()
     ignore_paths: tuple[str, ...] = ()
+    baseline: str | None = None
     fail_on: str | None = None
     max_file_bytes: int | None = None
     raw_path: Path | None = None
@@ -53,6 +54,7 @@ def load_config(root: Path, explicit_path: str | None = None) -> AgentScanConfig
         exclude=tuple(_string_list(raw.get("exclude"))),
         ignore_rules=tuple(_string_list(raw.get("ignore_rules"))),
         ignore_paths=tuple(_normalize_path(item) for item in _string_list(raw.get("ignore_paths"))),
+        baseline=_optional_str(raw.get("baseline")),
         fail_on=fail_on,
         max_file_bytes=max_file_bytes,
         raw_path=path,

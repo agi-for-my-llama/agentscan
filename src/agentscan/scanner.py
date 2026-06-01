@@ -75,7 +75,7 @@ def scan(options: ScanOptions) -> list[Finding]:
 
 
 def _iter_files(root: Path, excludes: Iterable[str]) -> Iterator[Path]:
-    excluded = DEFAULT_EXCLUDES.union(excludes)
+    excluded = {_normalize_path(item) for item in DEFAULT_EXCLUDES.union(excludes)}
     stack = [root]
     while stack:
         current = stack.pop()
@@ -85,7 +85,8 @@ def _iter_files(root: Path, excludes: Iterable[str]) -> Iterator[Path]:
             continue
 
         for child in children:
-            if child.name in excluded or any(part in excluded for part in child.relative_to(root).parts):
+            relative = _normalize_path(str(child.relative_to(root)))
+            if _is_excluded(child.name, relative, excluded):
                 continue
             if child.is_dir():
                 stack.append(child)
@@ -120,3 +121,13 @@ def _skip_by_size(path: Path, max_file_bytes: int) -> bool:
 
 def _display_path(root: Path, path: Path) -> str:
     return str(path.relative_to(root)).replace("\\", "/")
+
+
+def _is_excluded(name: str, relative_path: str, excluded: set[str]) -> bool:
+    if name in excluded or relative_path in excluded:
+        return True
+    return any(relative_path.startswith(f"{item}/") for item in excluded if "/" in item)
+
+
+def _normalize_path(path: str) -> str:
+    return path.replace("\\", "/").strip("/")

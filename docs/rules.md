@@ -4,7 +4,9 @@ AgentScan rules are intentionally narrow. Each finding should explain what was d
 
 ## `secret.*`
 
-Detects private keys, common cloud tokens, AI provider keys, GitHub tokens, and high-confidence secret assignments.
+Detects private keys, common cloud tokens, AI provider keys, package registry tokens, SaaS tokens, database URLs, and high-confidence secret assignments.
+
+Current provider-specific patterns include AWS, GitHub, OpenAI, Anthropic, Google API keys, Hugging Face, npm, PyPI, Slack, Discord, Stripe, Supabase, Vercel, and Postgres URLs.
 
 Why it matters: AI coding tools and MCP servers often need credentials. Hardcoding those credentials in source or config files makes them easy to leak when repos are shared, forked, or published.
 

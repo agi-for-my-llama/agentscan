@@ -96,6 +96,44 @@ class ScannerTests(unittest.TestCase):
 
         self.assertNotIn("mcp.env.inline-secret", {item.rule_id for item in findings})
 
+    def test_detects_common_provider_tokens(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "LICENSE").write_text("MIT", encoding="utf-8")
+            (root / "tokens.env").write_text(
+                "\n".join(
+                    [
+                        "ANTHROPIC_KEY=sk-ant-api03-" + "a" * 48,
+                        "GOOGLE_KEY=AIza" + "b" * 35,
+                        "HF_TOKEN=hf_" + "c" * 34,
+                        "NPM_TOKEN=npm_" + "d" * 34,
+                        "PYPI_TOKEN=pypi-" + "e" * 48,
+                        "SLACK_TOKEN=xoxb-" + "1" * 10 + "-" + "2" * 12,
+                        "DISCORD_TOKEN=" + "M" * 24 + "." + "N" * 6 + "." + "O" * 28,
+                        "STRIPE_KEY=sk_live_" + "f" * 24,
+                        "SUPABASE_TOKEN=sbp_" + "g" * 34,
+                        "VERCEL_TOKEN=vercel_" + "h" * 24,
+                        "DATABASE_URL=postgres://user:" + "password@example.com/app",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            findings = scan(ScanOptions(root=root))
+            rule_ids = {item.rule_id for item in findings}
+
+        self.assertIn("secret.anthropic-key", rule_ids)
+        self.assertIn("secret.google-api-key", rule_ids)
+        self.assertIn("secret.huggingface-token", rule_ids)
+        self.assertIn("secret.npm-token", rule_ids)
+        self.assertIn("secret.pypi-token", rule_ids)
+        self.assertIn("secret.slack-token", rule_ids)
+        self.assertIn("secret.discord-token", rule_ids)
+        self.assertIn("secret.stripe-key", rule_ids)
+        self.assertIn("secret.supabase-token", rule_ids)
+        self.assertIn("secret.vercel-token", rule_ids)
+        self.assertIn("secret.postgres-url", rule_ids)
+
 
 if __name__ == "__main__":
     unittest.main()
