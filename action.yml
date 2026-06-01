@@ -8,19 +8,19 @@ branding:
 
 inputs:
   path:
-    description: Repository path to scan.
+    description: "Repository path to scan."
     required: false
     default: "."
   fail-on:
-    description: Minimum severity that fails the workflow.
+    description: "Minimum severity that fails the workflow."
     required: false
     default: high
   format:
-    description: Output format: text, json, or sarif.
+    description: "Output format: text, json, or sarif."
     required: false
     default: text
   upload-sarif:
-    description: Upload SARIF to GitHub code scanning.
+    description: "Upload SARIF to GitHub code scanning."
     required: false
     default: "false"
 
