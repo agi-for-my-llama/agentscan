@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .baseline import apply_baseline, write_baseline
+from .baseline import apply_baseline, finding_fingerprint, write_baseline
 from .config import filter_findings, load_config
 from .findings import SEVERITY_ORDER, Finding
 from .scanner import ScanOptions, scan
@@ -47,16 +47,19 @@ def main(argv: list[str] | None = None) -> int:
         baseline_path = args.baseline or config.baseline
         if baseline_path:
             baseline_file = _resolve_scan_path(root, baseline_path)
-            findings, baseline_warnings = apply_baseline(findings, baseline_file)
+            findings, baseline_warnings, baseline_ok = apply_baseline(findings, baseline_file)
             for warning in baseline_warnings:
                 print(f"agentscan: baseline warning: {warning}", file=sys.stderr)
+            if not baseline_ok:
+                return 2
     except OSError as exc:
         print(f"agentscan: scan failed: {exc}", file=sys.stderr)
         return 2
 
     if args.update_baseline:
-        write_baseline(Path(args.update_baseline), findings)
-        print(f"Wrote baseline with {len(findings)} finding(s): {args.update_baseline}")
+        baseline_output = _resolve_scan_path(root, args.update_baseline)
+        write_baseline(baseline_output, findings)
+        print(f"Wrote baseline with {len(findings)} finding(s): {baseline_output}")
         return 0
 
     if args.format == "json":
@@ -185,6 +188,9 @@ def _print_sarif(findings: list[Finding]) -> None:
                         }
                     }
                 ],
+                "partialFingerprints": {
+                    "agentscan": finding_fingerprint(item),
+                },
                 "properties": {
                     "severity": item.severity,
                     "remediation": item.remediation,
@@ -203,7 +209,7 @@ def _print_sarif(findings: list[Finding]) -> None:
                         "tool": {
                             "driver": {
                                 "name": "AgentScan",
-                                "informationUri": "https://github.com/agentscan/agentscan",
+                                "informationUri": "https://github.com/agi-for-my-llama/agentscan",
                                 "rules": list(rules.values()),
                             }
                         },

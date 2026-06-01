@@ -112,6 +112,21 @@ class CliTests(unittest.TestCase):
         self.assertEqual(baseline["version"], 1)
         self.assertEqual(baseline["findings"][0]["rule_id"], "oss.license-missing")
 
+    def test_update_baseline_relative_path_writes_inside_scan_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--update-baseline", "agentscan-baseline.json"])
+
+            baseline_path = root / "agentscan-baseline.json"
+            baseline_exists = baseline_path.exists()
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(baseline_exists)
+
     def test_baseline_ignores_existing_findings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -137,6 +152,34 @@ class CliTests(unittest.TestCase):
         report = json.loads(stdout.getvalue())
         self.assertEqual(exit_code, 0)
         self.assertEqual(report["findings"], [])
+
+    def test_missing_baseline_returns_usage_error(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--baseline", "missing.json", "--format", "json"])
+
+        self.assertEqual(exit_code, 2)
+
+    def test_sarif_results_include_fingerprints(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--format", "sarif", "--fail-on", "critical"])
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertIn("partialFingerprints", report["runs"][0]["results"][0])
+        self.assertEqual(
+            report["runs"][0]["tool"]["driver"]["informationUri"],
+            "https://github.com/agi-for-my-llama/agentscan",
+        )
 
 
 if __name__ == "__main__":

@@ -47,20 +47,19 @@ def write_baseline(path: Path, findings: list[Finding]) -> None:
     )
 
 
-def apply_baseline(findings: list[Finding], path: Path) -> tuple[list[Finding], list[str]]:
-    warnings: list[str] = []
+def apply_baseline(findings: list[Finding], path: Path) -> tuple[list[Finding], list[str], bool]:
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
-        return findings, [f"Could not read baseline: {exc}"]
+        return findings, [f"Could not read baseline: {exc}"], False
     except json.JSONDecodeError as exc:
-        return findings, [f"Could not parse baseline JSON: {exc}"]
+        return findings, [f"Could not parse baseline JSON: {exc}"], False
 
     fingerprints = _baseline_fingerprints(raw)
     if fingerprints is None:
-        return findings, ["Ignoring invalid baseline format."]
+        return findings, ["Ignoring invalid baseline format."], False
 
-    return [item for item in findings if finding_fingerprint(item) not in fingerprints], warnings
+    return [item for item in findings if finding_fingerprint(item) not in fingerprints], [], True
 
 
 def _baseline_fingerprints(raw: Any) -> set[str] | None:
