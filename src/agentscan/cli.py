@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .baseline import apply_baseline, write_baseline
 from .config import filter_findings, load_config
 from .findings import SEVERITY_ORDER, Finding
 from .scanner import ScanOptions, scan
@@ -43,9 +44,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         findings = filter_findings(findings, config)
+        if args.baseline:
+            findings, baseline_warnings = apply_baseline(findings, Path(args.baseline))
+            for warning in baseline_warnings:
+                print(f"agentscan: baseline warning: {warning}", file=sys.stderr)
     except OSError as exc:
         print(f"agentscan: scan failed: {exc}", file=sys.stderr)
         return 2
+
+    if args.update_baseline:
+        write_baseline(Path(args.update_baseline), findings)
+        print(f"Wrote baseline with {len(findings)} finding(s): {args.update_baseline}")
+        return 0
 
     if args.format == "json":
         _print_json(findings)
@@ -101,6 +111,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "--config",
         default=None,
         help="Path to a JSON config file. Defaults to .agentscan.json or agentscan.json.",
+    )
+    parser.add_argument(
+        "--baseline",
+        default=None,
+        help="Ignore findings already present in a baseline file.",
+    )
+    parser.add_argument(
+        "--update-baseline",
+        default=None,
+        help="Write the current findings to a baseline file and exit 0.",
     )
     return parser
 

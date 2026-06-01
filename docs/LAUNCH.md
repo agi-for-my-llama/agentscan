@@ -15,9 +15,10 @@ Use this when publishing AgentScan as a public GitHub repository.
 - Tag `v0.1.0`.
 - Include the CLI, GitHub Action, SARIF output, and config support in release notes.
 - Keep the release explicit that the scanner is conservative and local-first.
+- For patch releases, highlight baseline and pre-commit support because they reduce adoption friction.
 
 ## Launch Copy
 
 AgentScan scans repos for the new layer of risk introduced by AI coding agents and MCP servers: inline secrets, risky MCP commands, hostile agent instructions, dangerous install hooks, and overbroad GitHub workflow permissions.
 
-It runs locally, has no runtime dependencies, emits SARIF, and ships as both a CLI and GitHub Action.
+It runs locally, has no runtime dependencies, emits SARIF, supports baselines, and ships as a CLI, GitHub Action, and pre-commit hook.

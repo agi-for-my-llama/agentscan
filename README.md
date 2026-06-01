@@ -43,9 +43,19 @@ Use it as a GitHub Action:
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: your-org/agentscan@v1
+  - uses: agi-for-my-llama/agentscan@v0.1.0
     with:
       fail-on: high
+```
+
+Use it with pre-commit:
+
+```yaml
+repos:
+  - repo: https://github.com/agi-for-my-llama/agentscan
+    rev: v0.1.0
+    hooks:
+      - id: agentscan
 ```
 
 Return JSON for CI or automation:
@@ -72,6 +82,13 @@ Ignore generated or vendored paths:
 agentscan . --exclude dist --exclude vendor
 ```
 
+Adopt AgentScan in a repo with existing findings:
+
+```bash
+agentscan . --update-baseline agentscan-baseline.json
+agentscan . --baseline agentscan-baseline.json
+```
+
 ## Config
 
 AgentScan automatically reads `.agentscan.json` or `agentscan.json` from the repository root.
@@ -86,6 +103,22 @@ AgentScan automatically reads `.agentscan.json` or `agentscan.json` from the rep
 ```
 
 CLI flags override config where both are provided.
+
+## Baseline
+
+Baselines let teams start using AgentScan without stopping all work on existing findings.
+
+```bash
+agentscan . --update-baseline agentscan-baseline.json
+```
+
+Then run with:
+
+```bash
+agentscan . --baseline agentscan-baseline.json
+```
+
+Only new findings will fail the scan.
 
 ## Exit Codes
 
@@ -105,6 +138,8 @@ AgentScan is intentionally conservative. It prefers specific, explainable checks
 | `github.workflow.*` | medium/high | `pull_request_target`, `write-all` token permissions |
 | `package.install-script` | medium/high | install hooks that run networked shell commands or broad filesystem changes |
 | `oss.license-missing` | medium | missing repository license |
+
+See [docs/rules.md](docs/rules.md) for rule details and fixes.
 
 ## CI Example
 
@@ -169,9 +204,7 @@ python -m unittest discover -s tests
 ## Roadmap
 
 - more MCP client config formats
-- optional baseline files for existing findings
 - package manager lockfile risk hints
-- pre-commit hook packaging
 - richer GitHub code scanning metadata
 
 ## License

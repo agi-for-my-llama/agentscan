@@ -1,0 +1,7 @@
+- id: agentscan
+  name: AgentScan
+  description: Scan repositories for AI agent, MCP, and launch-readiness risks.
+  entry: agentscan
+  language: python
+  pass_filenames: false
+  args: [".", "--fail-on", "high"]

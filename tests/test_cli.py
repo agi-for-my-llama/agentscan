@@ -75,6 +75,48 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertRegex(stdout.getvalue().strip(), r"^\d+\.\d+\.\d+")
 
+    def test_update_baseline_writes_findings_and_exits_zero(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            baseline_path = root / "agentscan-baseline.json"
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main([str(root), "--update-baseline", str(baseline_path)])
+
+            baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(baseline["version"], 1)
+        self.assertEqual(baseline["findings"][0]["rule_id"], "oss.license-missing")
+
+    def test_baseline_ignores_existing_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            baseline_path = root / "agentscan-baseline.json"
+            (root / "README.md").write_text("# Example\n", encoding="utf-8")
+            with redirect_stdout(StringIO()):
+                main([str(root), "--update-baseline", str(baseline_path)])
+            stdout = StringIO()
+
+            with redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        str(root),
+                        "--baseline",
+                        str(baseline_path),
+                        "--format",
+                        "json",
+                        "--fail-on",
+                        "medium",
+                    ]
+                )
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["findings"], [])
+
 
 if __name__ == "__main__":
     unittest.main()
