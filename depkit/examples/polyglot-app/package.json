@@ -1,0 +1,12 @@
+{
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "dependencies": {
+    "next": "13.4.0",
+    "react": "18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0"
+  }
+}
