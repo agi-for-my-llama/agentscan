@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from depkit.models import Dependency, Risk, UpgradePlan
+from depkit.models import Dependency, Risk, ScanWarning, UpgradePlan
 
 
 def render_scan(dependencies: list[Dependency]) -> str:
@@ -40,3 +40,12 @@ def render_plan(plan: UpgradePlan) -> str:
             lines.append(f"- {risk.dependency.name}: {version} [{risk.level}; {reasons}]")
         lines.append("")
     return "\n".join(lines).rstrip()
+
+
+def render_warnings(warnings: tuple[ScanWarning, ...]) -> str:
+    if not warnings:
+        return ""
+    lines = ["Warnings:"]
+    for warning in warnings:
+        lines.append(f"- {warning.source}: {warning.message}")
+    return "\n".join(lines)

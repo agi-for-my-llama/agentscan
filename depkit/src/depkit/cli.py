@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from depkit.planner import assess, build_plan
-from depkit.render import render_plan, render_risks, render_scan
-from depkit.scanner import scan
+from depkit.render import render_plan, render_risks, render_scan, render_warnings
+from depkit.scanner import scan_with_warnings
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,18 +19,33 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     root = Path(args.path)
-    dependencies = scan(root)
+    if not root.exists():
+        print(f"depkit: path does not exist: {root}", file=sys.stderr)
+        return 2
+    if not root.is_dir():
+        print(f"depkit: path is not a directory: {root}", file=sys.stderr)
+        return 2
+    result = scan_with_warnings(root)
+    dependencies = list(result.dependencies)
 
     if args.command == "scan":
-        print(render_scan(dependencies))
+        _print_with_warnings(render_scan(dependencies), result.warnings)
         return 0
     if args.command == "risk":
-        print(render_risks(assess(dependencies)))
+        _print_with_warnings(render_risks(assess(dependencies)), result.warnings)
         return 0
     if args.command == "plan":
-        print(render_plan(build_plan(dependencies)))
+        _print_with_warnings(render_plan(build_plan(dependencies)), result.warnings)
         return 0
     return 2
+
+
+def _print_with_warnings(body: str, warnings) -> None:
+    warning_text = render_warnings(warnings)
+    if warning_text:
+        print(f"{body}\n\n{warning_text}")
+    else:
+        print(body)
 
 
 if __name__ == "__main__":

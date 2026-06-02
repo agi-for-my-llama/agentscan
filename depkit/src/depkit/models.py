@@ -37,6 +37,18 @@ class Dependency:
 
 
 @dataclass(frozen=True)
+class ScanWarning:
+    source: Path
+    message: str
+
+
+@dataclass(frozen=True)
+class ScanResult:
+    dependencies: tuple[Dependency, ...]
+    warnings: tuple[ScanWarning, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
 class Risk:
     dependency: Dependency
     level: RiskLevel
