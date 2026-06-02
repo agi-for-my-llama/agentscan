@@ -1,4 +1,4 @@
-name: AgentScan
+name: AgentScan Security Preflight
 description: Scan repositories for AI agent, MCP, and launch-readiness risks.
 author: AgentScan contributors
 
