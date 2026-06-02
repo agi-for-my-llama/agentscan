@@ -15,7 +15,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for command in ("scan", "risk", "plan"):
         subparser = subparsers.add_parser(command)
-        subparser.add_argument("path", nargs="?", default=".", help="Repository path")
+        subparser.add_argument("path", nargs="?", default=".", help="Repo path")
 
     args = parser.parse_args(argv)
     root = Path(args.path)

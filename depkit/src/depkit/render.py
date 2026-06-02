@@ -5,8 +5,8 @@ from depkit.models import Dependency, Risk, ScanWarning, UpgradePlan
 
 def render_scan(dependencies: list[Dependency]) -> str:
     if not dependencies:
-        return "No dependency files found."
-    lines = [f"Found {len(dependencies)} dependencies:"]
+        return "No dependency manifests found."
+    lines = [f"Found {len(dependencies)} dependencies"]
     for dep in dependencies:
         version = dep.version or "unbounded"
         lines.append(f"- {dep.name}: {version} [{dep.ecosystem}/{dep.kind}] ({dep.source})")
@@ -16,7 +16,7 @@ def render_scan(dependencies: list[Dependency]) -> str:
 def render_risks(risks: list[Risk]) -> str:
     if not risks:
         return "No dependency risks found."
-    lines = ["Dependency risk:"]
+    lines = ["Dependency risks"]
     for risk in risks:
         reasons = ", ".join(risk.reasons)
         version = risk.dependency.version or "unbounded"
@@ -26,7 +26,7 @@ def render_risks(risks: list[Risk]) -> str:
 
 def render_plan(plan: UpgradePlan) -> str:
     if not plan.stages:
-        return "No upgrade plan generated."
+        return "No upgrade plan available."
     lines = [
         f"Upgrade plan for {plan.total_dependencies} dependencies",
         f"High-risk items: {plan.high_risk_count}",
